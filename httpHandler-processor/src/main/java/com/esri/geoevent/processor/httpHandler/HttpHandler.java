@@ -20,6 +20,7 @@
   Redlands, California, USA 92373
 
   email: contracts@esri.com
+  clean install -Dcontact.address=[hjose@img.com.br]
 */
 
 package com.esri.geoevent.processor.httpHandler;
@@ -48,7 +49,7 @@ import org.apache.http.ParseException;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
 import org.json.XML;
 
@@ -344,7 +345,64 @@ public class HttpHandler extends GeoEventProcessorBase implements GeoEventProduc
     {
       LOGGER.debug("New PostBody " + newPostBody);    
     }
-    
+    String[] processedHeaders = new String[headers.length]; //To get params from header
+    List<FieldDefinition> fdl  =  gd.getFieldDefinitions();
+    for (int i = 0; i < headers.length; i++)
+    {
+      String[] nameValue = headers[i].split(":");    //To get params from header name if needed
+      // Process header name
+      String[] nameParts = nameValue[0].split("[{*}]");
+      String processedName = "";
+      for (String part : nameParts)
+      {
+        
+        if (part != null && !part.isEmpty()) {
+	        	Integer idx = gd.getIndexOf(part);
+		        if (idx >= 0)
+		        {
+		          Field field = geoevent.getField(new FieldExpression(part));
+		          if (field != null)
+		          {
+		            part = field.getValue().toString();
+		          }
+		        }
+        }
+        processedName += part;
+      }
+
+      // Process header value
+      String processedValue = ""; //To get params from header values if needed
+      if (nameValue.length > 1)  // To avoid ArrayIndexOutOfBoundsException
+      {
+        String[] valueParts = nameValue[1].split("[{*}]");
+        for (String part : valueParts)
+        {
+        	if (part != null && !part.isEmpty()) {	
+			      Integer idx = gd.getIndexOf(part);
+			      if (idx >= 0)
+			      {
+			        Field field = geoevent.getField(new FieldExpression(part));
+			        if (field != null)
+			        {
+			          part = field.getValue().toString();
+			        }
+			      }
+        	}
+          processedValue += part;
+        }
+      } 
+      else 
+      {
+        LOGGER.error("Invalid header format for: " + headers[i]);
+      }
+
+      // Store the processed header
+      processedHeaders[i] = processedName + ":" + processedValue;
+    }
+
+    // Set processed headers for use in getFeed
+    headers = processedHeaders;
+    LOGGER.info("headers: \n" + headers.toString());
     HttpRequester httpRequester = new HttpRequester(newURL, newPostBody);
     executor.execute(httpRequester);
 
@@ -501,7 +559,7 @@ public class HttpHandler extends GeoEventProcessorBase implements GeoEventProduc
     {
       for (Integer i = 0; i < values.length; i++)
       {
-        if (NumberUtils.isNumber(values[i]))
+        if (NumberUtils.isCreatable(values[i]))
         {
           json += "\"field" + i.toString() + "\":" + values[i];
         }
@@ -556,7 +614,7 @@ public class HttpHandler extends GeoEventProcessorBase implements GeoEventProduc
       {
         FieldDefinition fd = fds.get(i);
         String fieldName = fd.getName();
-        if (NumberUtils.isNumber(values[i]))
+        if (NumberUtils.isCreatable(values[i]))
         {
           json += "\"" + fieldName + "\":" + values[i];
         }

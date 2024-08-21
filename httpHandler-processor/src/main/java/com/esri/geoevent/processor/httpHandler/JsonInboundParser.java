@@ -34,8 +34,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.node.NullNode;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.NullNode;
 
 import com.esri.core.geometry.Line;
 import com.esri.core.geometry.MapGeometry;
@@ -117,7 +117,7 @@ public class JsonInboundParser
   {
     if (tree.isArray())
     {
-      Iterator<JsonNode> elements = tree.getElements();
+      Iterator<JsonNode> elements = tree.elements();
       while (elements.hasNext())
       {
         JsonNode element = elements.next();
@@ -148,7 +148,7 @@ public class JsonInboundParser
       }
       else
       {
-        Iterator<JsonNode> elements = tree.getElements();
+        Iterator<JsonNode> elements = tree.elements();
         while (elements.hasNext())
         {
           JsonNode element = elements.next();
@@ -375,7 +375,7 @@ public class JsonInboundParser
   {
     if (node != null && node.isObject())
     {
-      for (Iterator<String> fieldNames = node.getFieldNames(); fieldNames != null && fieldNames.hasNext();)
+      for (Iterator<String> fieldNames = node.fieldNames(); fieldNames != null && fieldNames.hasNext();)
       {
         String fieldName = null;
         try
@@ -398,7 +398,7 @@ public class JsonInboundParser
                     if (n.isArray())
                     {
                       ArrayList<Object> results = new ArrayList<Object>();
-                      for (Iterator<JsonNode> arrayElements = n.getElements(); arrayElements.hasNext();)
+                      for (Iterator<JsonNode> arrayElements = n.elements(); arrayElements.hasNext();)
                         results.add(convert(event, fd, arrayElements.next()));
                       event.setField(fieldName, results);
                     }
@@ -424,11 +424,11 @@ public class JsonInboundParser
       if (node.isValueNode())
       {
         if (node.isNumber())
-          return node.getNumberValue();
+          return node.numberValue();
         if (node.isTextual())
-          return node.getTextValue();
+          return node.textValue();
         if (node.isBoolean())
-          return node.getBooleanValue();
+          return node.booleanValue();
       }
       else if (node.isObject())
         return node.toString();
@@ -524,7 +524,7 @@ public class JsonInboundParser
     List<FieldDefinition> fieldDefinitions = workingList;
     if (fieldDefinitions == null)
       fieldDefinitions = new ArrayList<FieldDefinition>();
-    Iterator<String> fieldNames = attributes.getFieldNames();
+    Iterator<String> fieldNames = attributes.fieldNames();
     while (fieldNames.hasNext())
     {
       String fieldName = fieldNames.next();
@@ -540,7 +540,7 @@ public class JsonInboundParser
         if (field.isArray())
         {
           cardinality = FieldCardinality.Many;
-          arrayElements = field.getElements();
+          arrayElements = field.elements();
           if (arrayElements.hasNext())
             field = arrayElements.next();
           else

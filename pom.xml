@@ -4,7 +4,7 @@
 
 	<groupId>com.esri.geoevent.parent</groupId>
 	<artifactId>httpHandler</artifactId>
-	<version>10.5.0</version>
+	<version>11.3.0</version>
 	<packaging>pom</packaging>
 
 	<name>Esri :: GeoEvent :: HttpHandler</name>
@@ -13,9 +13,9 @@
 	<properties>
 		<contact.address>geoevent@esri.com</contact.address>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.bundle.plugin.version>2.3.6</maven.bundle.plugin.version>
+		<maven.bundle.plugin.version>5.1.2</maven.bundle.plugin.version>
 		<junit.version>4.8.1</junit.version>
-		<jackson.version>1.9.5</jackson.version>
+		<jackson.version>2.10.0</jackson.version>
 	</properties>
 
 	<modules>
@@ -35,6 +35,11 @@
 			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+    		<groupId>com.fasterxml.jackson.core</groupId>
+    		<artifactId>jackson-databind</artifactId>
+    		<version>2.0.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -49,10 +54,10 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>2.5.1</version>
+
 					<configuration>
-						<source>1.7</source>
-						<target>1.7</target>
+						<source>8</source>
+						<target>8</target>
 					</configuration>
 				</plugin>
 			</plugins>

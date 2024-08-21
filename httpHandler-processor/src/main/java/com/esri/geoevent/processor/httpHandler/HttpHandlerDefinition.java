@@ -70,7 +70,7 @@ public class HttpHandlerDefinition extends GeoEventProcessorDefinitionBase
       propertyDefinitions.put("NewGeoEventDefinitionName", new PropertyDefinition("NewGeoEventDefinitionName", PropertyType.String, "NewGeoEventDefinition", "New GeoEvent Definition Name", "New GeoEvent Definition Name", "CreateGeoEventDefinition=true", false, false));
       propertyDefinitions.put("ExistingGeoEventDefinitionName", new PropertyDefinition("ExistingGeoEventDefinitionName", PropertyType.String, "ExistingGeoEventDefinition", "Existing GeoEvent Definition Name", "Existing GeoEvent Definition Name", "CreateGeoEventDefinition=false", false, false));
 
-      propertyDefinitions.put("headers", new PropertyDefinition("headers", PropertyType.String, "", "Headers", "HTTP headers name:value with | separator", false, false));
+      propertyDefinitions.put("headers", new PropertyDefinition("headers", PropertyType.String, "", "Headers", "HTTP headers name:value with | separator (params after :{field})", false, false));
       propertyDefinitions.put("body", new PropertyDefinition("body", PropertyType.String, "", "Body", "HTTP body", "httpMethod=POST,httpMethod=PUT", false, false));
 
       propertyDefinitions.put("TrackIdField", new PropertyDefinition("TrackIdField", PropertyType.String, "", "TrackId Field", "TrackId Field", false, false));
@@ -109,13 +109,14 @@ public class HttpHandlerDefinition extends GeoEventProcessorDefinitionBase
   @Override
   public String getVersion()
   {
-    return "10.5.0";
+    return "11.3.0";
   }
 
   @Override
   public String getLabel()
   {
-    return "${com.esri.geoevent.processor.httpHandler-processor.PROCESSOR_LABEL}";
+	return "Http Handlerv2";
+    //return "${com.esri.geoevent.processor.httpHandler-processor.PROCESSOR_LABEL}";
   }
 
   @Override
