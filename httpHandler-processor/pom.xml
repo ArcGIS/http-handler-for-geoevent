@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.esri.geoevent.parent</groupId>
 		<artifactId>httpHandler</artifactId>
-		<version>10.5.0</version>
+		<version>11.3.0</version>
 	</parent>
 	<groupId>com.esri.geoevent.processor</groupId>
 	<artifactId>httpHandler-processor</artifactId>
@@ -14,7 +14,12 @@
 		<dependency>
 		    <groupId>org.json</groupId>
 		    <artifactId>json</artifactId>
-		    <version>20160810</version>
+		    <version>20240303</version>
+		</dependency>
+		<dependency>
+    		<groupId>com.fasterxml.jackson.core</groupId>
+    		<artifactId>jackson-databind</artifactId>
+    		<version>2.10.0</version>
 		</dependency>
     </dependencies>
 	<build>
@@ -22,6 +27,7 @@
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
+				<version>5.1.2</version>
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
@@ -30,8 +36,10 @@
 						<Bundle-Version>${project.version}</Bundle-Version>
 						<Export-Package />
 						<Private-Package>com.esri.geoevent.processor.httpHandler</Private-Package>
-						<Import-Package>*,!org.son</Import-Package>
-                		<Embed-Dependency>json</Embed-Dependency>
+						<Import-Package>
+                            *
+                        </Import-Package>
+                		<Embed-Dependency>json,jackson-databind</Embed-Dependency>
 					</instructions>
 				</configuration>
 			</plugin>
