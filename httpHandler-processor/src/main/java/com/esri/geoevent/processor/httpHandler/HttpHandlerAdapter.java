@@ -34,15 +34,17 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
 
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonLocation;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonProcessingException;
-import org.codehaus.jackson.JsonToken;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonLocation;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 import com.esri.ges.adapter.AdapterDefinition;
 import com.esri.ges.adapter.InboundAdapterBase;
@@ -217,7 +219,7 @@ public class HttpHandlerAdapter implements Runnable
     {
       String jsonStrings = StringUtil.removeUTF8BOM(stringBuilder.toString());
 
-      ArrayList<String> objectStrings = parseToIndividualObjects(jsonStrings);
+      List<String> objectStrings = parseToIndividualObjects(jsonStrings);
       for (String jsonString : objectStrings)
       {
         remainingString = jsonString;
@@ -240,64 +242,60 @@ public class HttpHandlerAdapter implements Runnable
       LOGGER.error("PARSE_ERROR");
       LOGGER.info(ex.getMessage(), ex);
     }
+    catch (Exception ex)
+    {
+      LOGGER.debug(ex.getMessage(), ex);
+    }
   }
 
-  private ArrayList<String> parseToIndividualObjects(String inputString) throws JsonProcessingException, IOException
+  private List<String> parseToIndividualObjects(String inputString) throws JsonProcessingException, IOException
   {
-    ArrayList<String> results = new ArrayList<>();
-    JsonParser parser = new JsonFactory().createJsonParser(inputString);
-    LOGGER.debug("At the very beginning, the current location is " + parser.getCurrentLocation().getCharOffset());
-    // JsonNode tree = parser.readValueAsTree();
-    int depth = 0;
-    int start = 0;
-    JsonToken currentToken = null;
-    while (true)
-    {
-      try
-      {
-        currentToken = parser.nextToken();
+      List<String> results = new ArrayList<>();
+      JsonFactory factory = new JsonFactory();
+      ObjectMapper mapper = new ObjectMapper(factory);
+
+      try (JsonParser parser = factory.createParser(inputString)) {
+          int depth = 0;
+          int start = 0;
+          JsonToken currentToken;
+
+          while ((currentToken = parser.nextToken()) != null) {
+              if (currentToken.isStructStart()) {
+                  if (depth == 0) {
+                      start = (int) parser.getTokenLocation().getCharOffset();
+                  }
+                  depth++;
+              } else if (currentToken.isStructEnd()) {
+                  depth--;
+                  if (depth == 0) {
+                      int end = (int) parser.getTokenLocation().getCharOffset() + 1;
+                      String jsonObjectString = inputString.substring(start, end);
+                      results.add(jsonObjectString);
+                      start = end;
+                  }
+              }
+          }
+
+          // If there is leftover JSON after parsing, add it to the results
+          if (depth > 0) {
+              String leftovers = inputString.substring(start);
+              results.add(leftovers);
+          }
+      } catch (JsonProcessingException e) {
+          throw new IOException("Error processing JSON", e);
       }
-      catch (JsonParseException ex)
-      {
-        String leftovers = inputString.substring(start);
-        LOGGER.debug("Leftovers = " + leftovers);
-        results.add(leftovers);
-        currentToken = null;
-      }
-      if (currentToken == null)
-        break;
-      if (currentToken == JsonToken.START_OBJECT || currentToken == JsonToken.START_ARRAY)
-      {
-        if (depth == 0)
-        {
-          LOGGER.debug("At the start of an object, the current location is " + parser.getCurrentLocation().getCharOffset());
-          start = (int) parser.getCurrentLocation().getCharOffset();
-        }
-        depth++;
-      }
-      else if (currentToken == JsonToken.END_OBJECT || currentToken == JsonToken.END_ARRAY)
-      {
-        depth--;
-        if (depth == 0)
-        {
-          // we have a complete object
-          LOGGER.debug("At the end of an object, the current location is " + parser.getCurrentLocation().getCharOffset());
-          int end = (int) parser.getCurrentLocation().getCharOffset() + 1;
-          String jsonObjectString = inputString.substring(start, end);
-          start = end;
-          LOGGER.debug("jsonObject = " + jsonObjectString);
-          results.add(jsonObjectString);
-        }
-      }
-    }
-    return results;
+
+      return results;
+
   }
 
   public static void main(String[] args) throws JsonParseException, IOException
   {
     String test = "{\"name\":\"ryan\"}{\"name\":\"ric";
-    JsonParser outerParser = new JsonFactory().createJsonParser(test);
-    ObjectMapper mapper = new ObjectMapper();
+    JsonFactory factory = new JsonFactory();
+    ObjectMapper mapper = new ObjectMapper(factory);
+    JsonParser outerParser = factory.createParser(test);
+    
     Iterator<JsonNode> itr = mapper.readValues(outerParser, JsonNode.class);
     while (itr.hasNext())
     {
