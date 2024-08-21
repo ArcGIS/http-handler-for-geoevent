@@ -345,11 +345,11 @@ public class HttpHandler extends GeoEventProcessorBase implements GeoEventProduc
     {
       LOGGER.debug("New PostBody " + newPostBody);    
     }
-    String[] processedHeaders = new String[headers.length];
+    String[] processedHeaders = new String[headers.length]; //To get params from header
     List<FieldDefinition> fdl  =  gd.getFieldDefinitions();
     for (int i = 0; i < headers.length; i++)
     {
-      String[] nameValue = headers[i].split(":");
+      String[] nameValue = headers[i].split(":");    //To get params from header name if needed
       // Process header name
       String[] nameParts = nameValue[0].split("[{*}]");
       String processedName = "";
@@ -371,7 +371,7 @@ public class HttpHandler extends GeoEventProcessorBase implements GeoEventProduc
       }
 
       // Process header value
-      String processedValue = "";
+      String processedValue = ""; //To get params from header values if needed
       if (nameValue.length > 1)  // To avoid ArrayIndexOutOfBoundsException
       {
         String[] valueParts = nameValue[1].split("[{*}]");
